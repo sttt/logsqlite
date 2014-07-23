@@ -51,7 +51,7 @@ class Kohana_Log_SQLite3 extends Log_Writer {
 			if( ! class_exists('SQLite3'))
 				throw new Exception('Клас SQLite3 не існує');
 			
-			$filename = $this->session_config = Kohana::$config->load('sqlite')->get('filename');
+			$filename = Kohana::$config->load('sqlite')->get('filename');
 			$file_path = $this->_directory.$filename;			
 			$db = new SQLite3($file_path);
 			$result = $db->exec("
