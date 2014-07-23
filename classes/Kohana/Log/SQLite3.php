@@ -8,7 +8,7 @@
  * @copyright  (c) 2008-2014 Kohana Team
  * @license    http://kohanaframework.org/license
  */
-class LogSQLite_Log_SQLite3 extends Log_Writer {
+class Kohana_Log_SQLite3 extends Log_Writer {
 
 	/**
 	 * @var  string  Каталог, де будуть зберігатись логи
