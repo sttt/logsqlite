@@ -2,19 +2,17 @@
 /**
  * SQLite записувач логів. Записує повідомлення та зберігає його в базі даних SQLite.
  *
- * @package    Ktretyak
+ * @package    KtretyaK
  * @category   Logging
  * @author     Kohana Team, Kostya Tretyak
  * @copyright  (c) 2008-2014 Kohana Team
  * @license    http://kohanaframework.org/license
  */
-class Kohana_Log_SQLite3 extends Log_Writer {
-
-	/**
-	 * @var  string  Каталог, де будуть зберігатись логи
-	 */
-	protected $_directory;
+class Kohana_Log_SQLiteWriter extends Log_Writer {
 	
+	protected $config;
+
+
 	/**
 	 * Створення нового записувача логів. Перевіряється чи існує каталог
 	 * та чи є права на запис для нього.
@@ -24,16 +22,17 @@ class Kohana_Log_SQLite3 extends Log_Writer {
 	 * @param   string  $directory  Каталог для логів
 	 * @return  void
 	 */
-	public function __construct($directory)
+	public function __construct()
 	{
+		$this->config = Kohana::$config->load('logsqlite');
+		
+		$directory = $this->config['directory'];
+		
 		if ( ! is_dir($directory) OR ! is_writable($directory))
 		{
 			throw new Kohana_Exception('Directory :dir must be writable',
 				array(':dir' => Debug::path($directory)));
 		}
-
-		// Визначення шляху до каталогу
-		$this->_directory = realpath($directory).DIRECTORY_SEPARATOR;
 	}
 
 	/**
@@ -49,13 +48,16 @@ class Kohana_Log_SQLite3 extends Log_Writer {
 		try
 		{
 			if( ! class_exists('SQLite3'))
-				throw new Exception('Клас SQLite3 не існує');
+				throw new Exception('SQLite3 class does not exist');
 			
-			$filename = Kohana::$config->load('sqlite')->get('filename');
-			$file_path = $this->_directory.$filename;			
+			$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
+			
 			$db = new SQLite3($file_path);
+			
+			$tablename = $this->config['tablename'];
+			
 			$result = $db->exec("
-				create table if not exists logs
+				create table if not exists $tablename
 				(
 					id integer not null primary key autoincrement
 					,dateinsert integer
