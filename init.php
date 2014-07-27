@@ -11,7 +11,7 @@
 
 Kohana::$log->attach(new Log_SQLiteWriter(APPPATH.'logs'));
 
-Route::set('logsqlite/index', 'logsqlite(/about)')
+Route::set('logsqlite/index', 'logsqlite')
 	->defaults([
 		'directory' => 'Log',
 		'controller' => 'SQLiteReader',

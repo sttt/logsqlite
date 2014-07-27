@@ -4,7 +4,7 @@ body {
 
 input[type=date] {
 line-height: 28px;
-width: 200px;
+max-width: 200px;
 }
 
 td{
