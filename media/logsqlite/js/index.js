@@ -35,7 +35,7 @@ angular.module('Index', [])
 			,url: '?date_fr=' + angular.element(Date_from).val()
 					+ '&date_to=' + angular.element(Date_to).val()
 					+ '&levels=' + angular.toJson(levels)
-					+ '&search_text=' + angular.element(search_text).val()
+					+ '&search_text=' + encodeURIComponent(angular.element(search_text).val())
 			,cache: false
 			,headers: {"X-Requested-With": "XMLHttpRequest",}
 		})
