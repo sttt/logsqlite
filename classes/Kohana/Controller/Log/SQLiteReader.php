@@ -17,7 +17,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			$username = @$_SERVER['PHP_AUTH_USER'] ?: ''; 
 			$password = @$_SERVER['PHP_AUTH_PW'] ?: '';
 			
-			if( ! isset($this->config[$username]) or $this->config[$username] !== $password)
+			if( ! isset($this->config['users'][$username]) or $this->config['users'][$username] !== $password)
 			{				
 				throw HTTP_Exception::factory(401, 'Authentication required')->authenticate('Basic realm="Log_SQLiteReader"');
 			}
