@@ -30,12 +30,12 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			// Returns only static template
 			return $this->action_media('views/logsqlite/static', 'v_index.html');
 		
-		$levels = json_decode($get['levels'], true); // Associative array of arrays
+		$levels = json_decode($get['levels'], true); // Associative array
 		
 		try
 		{
 			if( ! class_exists('SQLite3'))
-				throw new Exception('Клас SQLite3 не існує');
+				throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
 			
 			$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
 			
@@ -55,7 +55,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 					,ip
 					,level
 					,body
-					
+					,dateinsert
 				from $tablename
 				where time > :date_fr and time < :date_to
 					and level in($levels)

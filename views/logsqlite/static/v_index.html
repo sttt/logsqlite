@@ -6,8 +6,11 @@
 		<title>Log_SQLiteReader</title>
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.17/angular.min.js"></script>
+		<!--link rel="stylesheet" href="/media/common/bootstrap/3.2.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/media/common/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+		<script type="text/javascript" src="/media/common/js/angular-1.3.0-beta.16.min.js"></script-->
 		<link rel="stylesheet" href="/media/logsqlite/css/index.css">
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.16/angular.min.js"></script>
 		<script type="text/javascript" src="/media/logsqlite/js/index.js"></script>
 	</head>
 	<body resizable>
@@ -28,62 +31,69 @@
 			</div><!--/.nav-collapse -->
 		</div>
 		<div class="container-fluid">
-				<div class="row">
-					<div class="col-md-12">
-						<noscript><h2 class = "alert alert-warning">To use this page you must enable JavaScript</h2></noscript>
-						<form class="form-horizontal" role="form" ng-submit="fetch()">
-							<div class="form-group">
-								<label for="search_text" class="col-md-1 control-label">Text in logs</label>
-								<div class="col-md-6">
-									<input autofocus type="text" class="form-control" id="search_text" placeholder="Enter plain text to search (you can use the % wildcard for SQL query)">
-								</div>
-								<div class="col-md-2">
-									<div class="submit">
-										<button type="submit" class="btn btn-default">Search</button>
-									</div>
-								</div>
-								<div class="col-md-3"></div>
+			<div class="row">
+				<div class="col-md-12">
+					<noscript><p class = "alert alert-warning">To use this page you must enable JavaScript</p></noscript>
+					<form name="search" class="form-horizontal" role="form" ng-submit="fetch()">
+						<div class="form-group">
+							<label class="col-md-1 control-label">Search text</label>
+							<div class="col-md-6">
+								<input autofocus type="text" class="form-control" ng-model="search_text" name="search_text"
+									   placeholder="{{logs.length && 'Now available Local Search by all fields'
+												   || 'Enter plain text for search in the field \'body\' (you can use the % wildcard for SQL query)'}}">
 							</div>
-							<div class="form-group">
-								<div ng-repeat="dt in ['Date_from', 'Date_to']">
-									<label class="col-md-1 control-label" for="{{dt}}">{{dt}}</label>
-									<div class="col-md-2">
-										<input type="date" class="form-control" id="{{dt}}" value="{{date | date:'yyyy-MM-dd'}}">
-									</div>
+							<div class="col-md-2">
+								<div class="submit">
+									<button id="btn-search" type="submit" class="btn btn-default">Pull logs</button>
 								</div>
-								<div class="col-md-6"></div>
 							</div>
-							<div class="form-group">
-								<label class="col-md-1 control-label">Levels</label>
-								<div ng-repeat="col in cols" class="col-md-2">
-									<div ng-repeat="row in col" class="checkbox">
-										<label>
-											<input type="checkbox" ng-model="row.selected">{{row.level}}
-										</label>
-									</div>
+							<div class="col-md-3"></div>
+						</div>
+						<div class="form-group">
+								<label class="col-md-1 control-label">Date from</label>
+								<div class="col-md-2 {{search.date_fr.$error.date && 'has-error' || ''}}">
+									<input type="date" name="date_fr" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control" required />
 								</div>
-								<div class="col-md-5"></div>
+								<label class="col-md-1 control-label">Date to</label>
+								<div class="col-md-2 {{search.date_to.$error.date && 'has-error' || ''}}">
+									<input type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
+								</div>
+							<div class="col-md-6"></div>
+						</div>
+						<div class="form-group">
+							<label class="col-md-1 control-label">Levels</label>
+							<div ng-repeat="col in cols" class="col-md-2">
+								<div ng-repeat="row in col" class="checkbox">
+									<label>
+										<input ng-change="conv_lvls_to_arr()" type="checkbox" ng-model="row.selected">{{row.level}}
+										<span class="badge" title="total">{{stat_lvls[row.level]}}</span>
+									</label>
+								</div>
 							</div>
-						</form>
-					</div>
-				</div><!-- /.row -->
-				<div class="row">
-					<div class="col-md-12">
-						<table class="table table-striped table-bordered table-hover">
-							<tr>
-								<th style="width:140px !important">Datetime</th>
-								<th style="width:80px !important">Level</th>
-								<th>Message</th>
-							</tr>
-							<tr ng-repeat="tr in logs" ng-click="tr.showDetails = ! tr.showDetails">
-								<td style="font-size: 12px;">{{tr.time}}</td>
-								<td style="font-size: 11px;">{{tr.level}}</td>
-								<td ng-show="!tr.showDetails">{{tr.body | limitTo:limit_to}}</td>
-								<td ng-show="tr.showDetails" style="white-space: pre-line;">{{tr.body}}</td>
-							</tr>
-						</table>
-					</div>
+							<div class="col-md-5"></div>
+						</div>
+					</form>
 				</div>
+			</div><!-- /.row -->
+			<div class="row">
+				<div class="col-md-12">
+					<p ng-if="logs.length">Total {{logs.length}} rows</p>
+					<p ng-if="logs.length">After applying local filters found {{(logs | filter:search_text | filter:f_date | filter:f_levels).length}} rows</p>
+					<table class="table table-striped table-bordered table-hover">
+						<tr>
+							<th style="width:140px !important">Datetime</th>
+							<th style="width:80px !important">Level</th>
+							<th>Message</th>
+						</tr>
+						<tr ng-repeat="tr in logs | filter:search_text | filter:f_levels | filter:f_date" ng-click="tr.showDetails = ! tr.showDetails">
+							<td style="font-size: 12px;">{{tr.time}}</td>
+							<td style="font-size: 11px;"><span class="label label-{{tr.level | badge_level}}">{{tr.level}}</span></td>
+							<td ng-show="!tr.showDetails">{{tr.body | limitTo:limit_to}}</td>
+							<td ng-show="tr.showDetails" style="white-space: pre-line;">{{tr.body}}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
 		</div><!-- /.container -->
 	</body>
 </html>

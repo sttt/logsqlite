@@ -48,7 +48,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 		try
 		{
 			if( ! class_exists('SQLite3'))
-				throw new Exception('SQLite3 class does not exist');
+				throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
 			
 			$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
 			
@@ -75,7 +75,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			");
 			
 			if( ! $result)
-				throw new Exception('По якійсь причині не може створитись таблиця для логів в базі SQLite');
+				throw new Exception('For some reason can not be created for the log table in the database SQLite');
 			
 			$db->busyTimeout(3000);
 
@@ -109,7 +109,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			');
 
 			if ($stmt === false)
-				throw new Exception('Стався збій при підготовці запита для таблиці logs');
+				throw new Exception('There was a glitch in the preparation of the request for a table logs');
 			
 			$message_str = '';
 			foreach ($messages as $message)
@@ -127,7 +127,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					$stmt->bindValue(':function', @$row['function'], SQLITE3_TEXT);
 					$stmt->execute();
 					if ($stmt === false)
-						throw new Exception('Стався збій при вставці нового повідомлення в таблицю logs');
+						throw new Exception('Failed when inserting a new message in the logs table');
 				}
 		}
 		catch(Exception $e)

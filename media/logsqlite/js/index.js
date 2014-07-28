@@ -1,18 +1,19 @@
 angular.module('Index', [])
 
-.controller('MainController', function($scope, $http){
+.controller('MainController', function($scope, $http, getLevels){
 	
-	$scope.date = new Date();
+	$scope.date_fr = $scope.date_to = new Date();
 	
-	$scope.levels = [
-		{level: 'WARNING', selected: true},
-		{level: 'DEBUG', selected: true},
-		{level: 'ERROR', selected: true},
-		{level: 'CRITICAL', selected: true},
-		{level: 'EMERGENCY', selected: true},
-		{level: 'NOTICE', selected: true},
-		{level: 'INFO', selected: true},
-	];
+	$scope.levels = getLevels;
+	
+    $scope.conv_lvls_to_arr = function()
+	{
+		$scope.arr_levels = [];
+		angular.forEach($scope.levels, function(obj)
+		{
+		  if(obj.selected)$scope.arr_levels.push(obj.level);
+		});
+	}
 	
 	$scope.cols = [];
 	var i,j,chunk = 3;
@@ -23,32 +24,58 @@ angular.module('Index', [])
 	
 	$scope.fetch = function()
 	{
-		var levels = [];
-		angular.forEach($scope.levels, function(obj)
-		{
-		  if (obj.selected) levels.push(obj.level);
-		});
-		
+		$scope.conv_lvls_to_arr();
 		$http
 		({
 			method: 'GET'
-			,url: '?date_fr=' + angular.element(Date_from).val()
-					+ '&date_to=' + angular.element(Date_to).val()
-					+ '&levels=' + angular.toJson(levels)
-					+ '&search_text=' + encodeURIComponent(angular.element(search_text).val())
+			,url: '?date_fr=' + $scope.search.date_fr.$viewValue
+					+ '&date_to=' + $scope.search.date_to.$viewValue
+					+ '&levels=' + angular.toJson($scope.arr_levels)
+					+ '&search_text=' + encodeURIComponent($scope.search.search_text.$viewValue)
 			,cache: false
 			,headers: {"X-Requested-With": "XMLHttpRequest",}
 		})
 		.success(function(data)
 		{
+			$scope.stat_lvls = [];
+			for(var i = 0; i < data.length; i++)
+			{
+				var level = data[i].level;
+				if(angular.isDefined($scope.stat_lvls[level]))
+					$scope.stat_lvls[level]++;
+				else
+					$scope.stat_lvls[level] = 1;
+			}
 			$scope.logs = data;
 		})
 		.error(function(data, status)
 		{
-			if(status == 401 && typeof data.auth_url !== 'undefined')
+			if(status == 401 && angular.isDefined(data.auth_url))
 				window.location = data.auth_url;
 			return data = data || "Request failed";
 		});
+	}
+	
+	$scope.f_date = function(val)
+	{
+		var time_obj = new Date(val.dateinsert * 1000);
+		var date_to = angular.copy($scope.date_to);
+		date_to.setDate(date_to.getDate() + 1);
+		return (time_obj >= $scope.date_fr && time_obj <= date_to);
+	}
+	
+	$scope.f_levels = function(val)
+	{
+		var res = false;
+		for(var i = 0; i < $scope.arr_levels.length; i++)
+		{
+			if(val.level == $scope.arr_levels[i])
+			{
+				res = true;
+				break;
+			}
+		}
+		return res;
 	}
 })
 
@@ -69,6 +96,34 @@ angular.module('Index', [])
 	  
 	  $scope.initializeWindowSize();
 	}
+})
+
+.factory('getLevels', function(){
+	return 	[
+		{level: 'EMERGENCY', label: 'danger', selected: true},
+		{level: 'ALERT', label: 'danger', selected: true},
+		{level: 'CRITICAL', label: 'danger', selected: true},
+		{level: 'ERROR', label: 'danger', selected: true},
+		{level: 'WARNING', label: 'warning', selected: true},
+		{level: 'NOTICE', label: 'default', selected: true},
+		{level: 'INFO', label: 'info', selected: true},
+		{level: 'DEBUG', label: 'info', selected: true},
+	];
+})
+
+.filter('badge_level', function(getLevels) {
+    return function(val) {
+		var res = '';
+        for(var i=0; i < getLevels.length; i++)
+		{
+			if(val == getLevels[i].level)
+			{
+				res = getLevels[i].label;
+				break;
+			}
+		}
+		return res;
+    };
 })
 
 ;
