@@ -132,8 +132,24 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 		}
 		catch(Exception $e)
 		{
-			if(Kohana::$environment !== Kohana::PRODUCTION)
-				throw $e; // Покищо, при збої запису логів, видається помилка; пізніше можна це змінити.
+			$file_log_writer =  new Log_File(APPPATH.'logs');
+			$file_log_writer->write($messages);
+			$messages = [];
+			
+			$trace = $e->getTrace();
+			$messages[0] =
+			[
+				'time'       => time(),
+				'level'      => Log::ERROR,
+				'body'       => $e->getMessage(),
+				'trace'      => $trace,
+				'file'       => isset($trace[0]['file']) ? $trace[0]['file'] : NULL,
+				'line'       => isset($trace[0]['line']) ? $trace[0]['line'] : NULL,
+				'class'      => isset($trace[0]['class']) ? $trace[0]['class'] : NULL,
+				'function'   => isset($trace[0]['function']) ? $trace[0]['function'] : NULL,
+			];
+			
+			$file_log_writer->write($messages);
 		}
 	}
 	

@@ -10,7 +10,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		
 		$this->config = Kohana::$config->load('logsqlite');
 		
-		if ($this->config['authentication'] and empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
+		if ($this->request->action() != 'media' and $this->config['authentication'] and empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
 		{
 			// Web server may never pass these variables (depending on configuration);
 			// in this case, authentication will not work correctly
@@ -32,63 +32,57 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		
 		$levels = json_decode($get['levels'], true); // Associative array
 		
-		try
-		{
-			if( ! class_exists('SQLite3'))
-				throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
-			
-			$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
-			
-			$db = new SQLite3($file_path, SQLITE3_OPEN_READONLY);
-			
-			$db->busyTimeout(3000);
+		if( ! class_exists('SQLite3'))
+			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
 
-			$tablename = $this->config['tablename'];
-			
-			$levels = "'".implode("', '", $levels)."'";
-			
-			$stmt = $db->prepare
-			(
-				"select
-					time
-					,url
-					,ip
-					,level
-					,body
-					,dateinsert
-				from $tablename
-				where time > :date_fr and time < :date_to
-					and level in($levels)
-					and body like :search_text
-				limit :limit
-				"
-			);
-			
-			if ($stmt === false)
-				throw new Exception('For some reason, the logs can not be loaded');
-			
-			$date_to = date('Y-m-d', strtotime($get['date_to']. ' + 1 days'));
-			
-			$stmt->bindValue(':date_fr', $get['date_fr'], SQLITE3_TEXT);
-			$stmt->bindValue(':date_to', $date_to, SQLITE3_TEXT);
-			$stmt->bindValue(':search_text', "%$get[search_text]%", SQLITE3_TEXT);
-			$stmt->bindValue(':limit', $this->config['limit_fetch_row'], SQLITE3_TEXT);
-			
-			if (($results = $stmt->execute()) === false)
-				throw new Exception('For some reason, the logs can not be loaded');
-			
-			$logs = [];
-			while ($row = $results->fetchArray(SQLITE3_ASSOC))
-			{
-				$logs[] = $row;
-			}
-		}
-		catch(Exception $e)
-		{
-			if(Kohana::$environment !== Kohana::PRODUCTION)
-				throw $e; // Покищо, при збої запису логів, видається помилка; пізніше можна це змінити.
-		}
+		$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
+
+		$db = new SQLite3($file_path, SQLITE3_OPEN_READONLY);
+
+		$db->busyTimeout(3000);
+
+		$tablename = $this->config['tablename'];
+
+		$levels = "'".implode("', '", $levels)."'";
+
+		$stmt = $db->prepare
+		(
+			"select
+				time
+				,url
+				,ip
+				,level
+				,body
+				,dateinsert
+			from $tablename
+			where time > :date_fr and time < :date_to
+				and level in($levels)
+				and body like :search_text
+			limit :limit
+			"
+		);
+
+		if ($stmt === false)
+			throw new Exception('For some reason, the logs can not be loaded');
+
+		$date_to = date('Y-m-d', strtotime($get['date_to']. ' + 1 days'));
+
+		$limit = ( ! empty($get['limit']) and (int) $get['limit']) ? $get['limit'] : $this->config['default_limit'];
+
+		$stmt->bindValue(':date_fr', $get['date_fr'], SQLITE3_TEXT);
+		$stmt->bindValue(':date_to', $date_to, SQLITE3_TEXT);
+		$stmt->bindValue(':search_text', "%$get[search_text]%", SQLITE3_TEXT);
+		$stmt->bindValue(':limit', $limit, SQLITE3_TEXT);
 		
+		if (($results = $stmt->execute()) === false)
+			throw new Exception('For some reason, the logs can not be loaded');
+
+		$logs = [];
+		while ($row = $results->fetchArray(SQLITE3_ASSOC))
+		{
+			$logs[] = $row;
+		}
+
 		$this->response->body(json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_HEX_AMP ));
     }
 

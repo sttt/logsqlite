@@ -1,9 +1,15 @@
-angular.module('Index', [])
+angular.module('Index', ['ngCookies'])
 
-.controller('MainController', function($scope, $http, getLevels){
+.controller('MainController', function($scope, $http, $cookies, getLevels){
 	
-	$scope.date_fr = $scope.date_to = new Date();
+	$scope.date_fr = new Date();
+	$scope.date_fr.setHours(0);
+	$scope.date_fr.setMinutes(0);
+	$scope.date_fr.setSeconds(0);
+	$scope.date_to = $scope.date_fr;
 	
+	$scope.$cookies = $cookies;
+//	$scope.limit = $cookies.limit;
 	$scope.levels = getLevels;
 	
     $scope.conv_lvls_to_arr = function()
@@ -24,19 +30,30 @@ angular.module('Index', [])
 	
 	$scope.fetch = function()
 	{
+		var search_text = $scope.search.search_text.$viewValue;
+		search_text = angular.isDefined(search_text) ? search_text : '';
+			
+		$cookies.limit = $scope.limit;
 		$scope.conv_lvls_to_arr();
 		$http
 		({
 			method: 'GET'
 			,url: '?date_fr=' + $scope.search.date_fr.$viewValue
 					+ '&date_to=' + $scope.search.date_to.$viewValue
+					+ '&limit=' + $scope.search.limit.$viewValue
 					+ '&levels=' + angular.toJson($scope.arr_levels)
-					+ '&search_text=' + encodeURIComponent($scope.search.search_text.$viewValue)
+					+ '&search_text=' + encodeURIComponent(search_text)
 			,cache: false
 			,headers: {"X-Requested-With": "XMLHttpRequest",}
 		})
 		.success(function(data)
 		{
+			if( ! angular.isArray(data))
+			{
+				console.log(data);
+				return;
+			}
+			
 			$scope.stat_lvls = [];
 			for(var i = 0; i < data.length; i++)
 			{
