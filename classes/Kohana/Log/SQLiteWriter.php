@@ -10,6 +10,41 @@
  */
 class Kohana_Log_SQLiteWriter extends Log_Writer {
 	
+	/**
+	 * @var  string  timestamp format for log entries.
+	 *
+	 * Defaults to Date::$timestamp_format
+	 */
+	public static $timestamp;
+	
+
+	/**
+	 * @var  string  timezone for log entries
+	 *
+	 * Defaults to Date::$timezone, which defaults to date_default_timezone_get()
+	 */
+	public static $timezone;
+	
+	/**
+	 * Numeric log level to string lookup table.
+	 * @var array
+	 */
+	protected $_log_levels = array(
+		LOG_EMERG   => 'EMERGENCY',
+		LOG_ALERT   => 'ALERT',
+		LOG_CRIT    => 'CRITICAL',
+		LOG_ERR     => 'ERROR',
+		LOG_WARNING => 'WARNING',
+		LOG_NOTICE  => 'NOTICE',
+		LOG_INFO    => 'INFO',
+		LOG_DEBUG   => 'DEBUG',
+	);
+
+	/**
+	 * @var  int  Level to use for stack traces
+	 */
+	public static $strace_level = LOG_DEBUG;
+	
 	protected $config;
 
 
@@ -134,10 +169,10 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 		{
 			$file_log_writer =  new Log_File(APPPATH.'logs');
 			$file_log_writer->write($messages);
-			$messages = [];
 			
+			$message = [];
 			$trace = $e->getTrace();
-			$messages[0] =
+			$message[0] =
 			[
 				'time'       => time(),
 				'level'      => Log::ERROR,
@@ -149,9 +184,13 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 				'function'   => isset($trace[0]['function']) ? $trace[0]['function'] : NULL,
 			];
 			
-			$file_log_writer->write($messages);
+			$file_log_writer->write($message);
+			
+			$this->after_catch();
 		}
 	}
+	
+	protected function after_catch(){} // Here you can send a mail, for example
 	
 	/**
 	 * Формат запису логів.
@@ -162,7 +201,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 	 */
 	public function format_message(array $message, $format = "")
 	{
-		$message['time'] = Date::formatted_time('@'.$message['time'], Log_Writer::$timestamp, Log_Writer::$timezone, TRUE);
+		$message['time'] = Date::formatted_time('@'.$message['time'], Log_SQLiteWriter::$timestamp, Log_SQLiteWriter::$timezone, TRUE);
 		$message['level'] = $this->_log_levels[$message['level']];
 		
 		$rows[] = array_filter($message, 'is_scalar');
@@ -171,7 +210,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 		{
 			// Re-use as much as possible, just resetting the body to the trace
 			$message['body'] = $message['additional']['exception']->getTraceAsString();
-			$message['level'] = $this->_log_levels[Log_Writer::$strace_level];
+			$message['level'] = $this->_log_levels[Log_SQLiteWriter::$strace_level];
 
 			$rows[] = array_filter($message, 'is_scalar');
 		}

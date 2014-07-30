@@ -39,7 +39,7 @@
 						<div class="form-group">
 							<label class="col-md-1 control-label">Search text</label>
 							<div class="col-md-6">
-								<input autofocus type="text" class="form-control" ng-model="search_text" name="search_text"
+								<input id="serch_text" autofocus type="text" class="form-control" ng-model="search_text" name="search_text"
 									   placeholder="{{logs.length && 'Now available Local Search by all fields'
 												   || 'Enter plain text for search in the field \'body\' (you can use the % wildcard for SQL query)'}}">
 							</div>
@@ -59,11 +59,12 @@
 								<div class="col-md-2 {{search.date_to.$error.date && 'has-error' || ''}}">
 									<input type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
 								</div>
-								<label class="col-md-1 control-label">Limit messages</label>
+								<label class="col-md-1 control-label">Limit pulling</label>
 								<div class="col-md-1 {{search.limit.$error.number && 'has-error' || ''}}">
-									<input type="number" name="limit" ng-model="limit"
+									<input type="number" id="limit" value="{{$cookies.limit_fetch}}"
 										   min="1" max="1000" class="form-control"/>
 								</div>
+								<div class="col-md-4"></div>
 						</div>
 						<div class="form-group">
 							<label class="col-md-1 control-label">Levels</label>

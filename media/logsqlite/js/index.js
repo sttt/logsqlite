@@ -9,7 +9,6 @@ angular.module('Index', ['ngCookies'])
 	$scope.date_to = $scope.date_fr;
 	
 	$scope.$cookies = $cookies;
-//	$scope.limit = $cookies.limit;
 	$scope.levels = getLevels;
 	
     $scope.conv_lvls_to_arr = function()
@@ -30,17 +29,18 @@ angular.module('Index', ['ngCookies'])
 	
 	$scope.fetch = function()
 	{
+		var limit_fetch = $cookies.limit_fetch = angular.element(limit).val();
 		var search_text = $scope.search.search_text.$viewValue;
 		search_text = angular.isDefined(search_text) ? search_text : '';
+		angular.element(serch_text).addClass('loading');
 			
-		$cookies.limit = $scope.limit;
 		$scope.conv_lvls_to_arr();
 		$http
 		({
 			method: 'GET'
 			,url: '?date_fr=' + $scope.search.date_fr.$viewValue
 					+ '&date_to=' + $scope.search.date_to.$viewValue
-					+ '&limit=' + $scope.search.limit.$viewValue
+					+ '&limit=' + limit_fetch
 					+ '&levels=' + angular.toJson($scope.arr_levels)
 					+ '&search_text=' + encodeURIComponent(search_text)
 			,cache: false
@@ -64,9 +64,11 @@ angular.module('Index', ['ngCookies'])
 					$scope.stat_lvls[level] = 1;
 			}
 			$scope.logs = data;
+			angular.element(serch_text).removeClass('loading');
 		})
 		.error(function(data, status)
 		{
+			angular.element(serch_text).removeClass('loading');
 			if(status == 401 && angular.isDefined(data.auth_url))
 				window.location = data.auth_url;
 			return data = data || "Request failed";

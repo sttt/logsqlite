@@ -15,3 +15,7 @@ td{
 .table-hover>tbody>tr:hover>th {
 background-color: #E7E7E7;
 }
+
+.loading {
+	background: white url('/media/logsqlite/img/load.gif') 99% center no-repeat;
+}

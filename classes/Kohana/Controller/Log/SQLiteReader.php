@@ -10,7 +10,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		
 		$this->config = Kohana::$config->load('logsqlite');
 		
-		if ($this->request->action() != 'media' and $this->config['authentication'] and empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
+		if ($this->config['authentication'] and empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
 		{
 			// Web server may never pass these variables (depending on configuration);
 			// in this case, authentication will not work correctly
