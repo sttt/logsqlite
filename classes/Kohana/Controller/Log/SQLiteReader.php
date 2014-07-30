@@ -30,8 +30,6 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			// Returns only static template
 			return $this->action_media('views/logsqlite/static', 'v_index.html');
 		
-		$levels = json_decode($get['levels'], true); // Associative array
-		
 		if( ! class_exists('SQLite3'))
 			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
 
@@ -42,7 +40,10 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		$db->busyTimeout(3000);
 
 		$tablename = $this->config['tablename'];
-
+		$tablename = $db->escapeString($tablename);
+		
+		$levels = json_decode($get['levels'], true); // Associative array
+		$levels = array_map([$db,'escapeString'], $levels);
 		$levels = "'".implode("', '", $levels)."'";
 
 		$stmt = $db->prepare
@@ -55,7 +56,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 				,body
 				,dateinsert
 			from $tablename
-			where time > :date_fr and time < :date_to
+			where dateinsert between :date_fr and :date_to
 				and level in($levels)
 				and body like :search_text
 			limit :limit
@@ -65,12 +66,10 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		if ($stmt === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 
-		$date_to = date('Y-m-d', strtotime($get['date_to']. ' + 1 days'));
-
 		$limit = ( ! empty($get['limit']) and (int) $get['limit']) ? $get['limit'] : $this->config['default_limit'];
 
-		$stmt->bindValue(':date_fr', $get['date_fr'], SQLITE3_TEXT);
-		$stmt->bindValue(':date_to', $date_to, SQLITE3_TEXT);
+		$stmt->bindValue(':date_fr', $get['date_fr'], SQLITE3_INTEGER);
+		$stmt->bindValue(':date_to', $get['date_to'], SQLITE3_INTEGER);
 		$stmt->bindValue(':search_text', "%$get[search_text]%", SQLITE3_TEXT);
 		$stmt->bindValue(':limit', $limit, SQLITE3_TEXT);
 		

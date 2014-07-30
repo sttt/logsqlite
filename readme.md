@@ -23,4 +23,4 @@ if(class_exists('SQLite3'))
 	Kohana::$log->detach($file_log_writer);
 ~~~
 ## Читання логів
-Для того щоб прочитати логи перейдіть за адресою `http://yoursite.com/logsqlite`
+Для того щоб прочитати логи перейдіть за адресою `http://localhost/logsqlite`

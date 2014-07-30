@@ -20,6 +20,8 @@ angular.module('Index', ['ngCookies'])
 		});
 	}
 	
+	$scope.error_msg_close = function(){ $scope.error_msg = false; }
+	
 	$scope.cols = [];
 	var i,j,chunk = 3;
 	for (i=0,j = $scope.levels.length; i<j; i+=chunk)
@@ -29,58 +31,68 @@ angular.module('Index', ['ngCookies'])
 	
 	$scope.fetch = function()
 	{
-		var limit_fetch = $cookies.limit_fetch = angular.element(limit).val();
-		var search_text = $scope.search.search_text.$viewValue;
-		search_text = angular.isDefined(search_text) ? search_text : '';
-		angular.element(serch_text).addClass('loading');
-			
-		$scope.conv_lvls_to_arr();
-		$http
-		({
-			method: 'GET'
-			,url: '?date_fr=' + $scope.search.date_fr.$viewValue
-					+ '&date_to=' + $scope.search.date_to.$viewValue
-					+ '&limit=' + limit_fetch
-					+ '&levels=' + angular.toJson($scope.arr_levels)
-					+ '&search_text=' + encodeURIComponent(search_text)
-			,cache: false
-			,headers: {"X-Requested-With": "XMLHttpRequest",}
-		})
-		.success(function(data)
+		try
 		{
-			if( ! angular.isArray(data))
+			var limit_fetch = $cookies.limit_fetch = angular.element(limit).val();
+			var search_text = $scope.search_text;
+			search_text = angular.isDefined(search_text) ? search_text : '';
+			angular.element(serch_text).addClass('loading');
+
+			var date_fr = $scope.date_fr.getTime()/1000; // Convert to seconds
+			var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
+
+			$scope.conv_lvls_to_arr();
+			$http
+			({
+				method: 'GET'
+				,url: '?date_fr=' + date_fr
+						+ '&date_to=' + date_to
+						+ '&limit=' + limit_fetch
+						+ '&levels=' + angular.toJson($scope.arr_levels)
+						+ '&search_text=' + encodeURIComponent(search_text)
+				,cache: false
+				,headers: {"X-Requested-With": "XMLHttpRequest",}
+			})
+			.success(function(data)
 			{
-				console.log(data);
-				return;
-			}
-			
-			$scope.stat_lvls = [];
-			for(var i = 0; i < data.length; i++)
+				if( ! angular.isArray(data))
+				{
+					console.log(data);
+					return;
+				}
+
+				$scope.stat_lvls = [];
+				for(var i = 0; i < data.length; i++)
+				{
+					var level = data[i].level;
+					if(angular.isDefined($scope.stat_lvls[level]))
+						$scope.stat_lvls[level]++;
+					else
+						$scope.stat_lvls[level] = 1;
+				}
+				$scope.logs = data;
+				angular.element(serch_text).removeClass('loading');
+			})
+			.error(function(data, status)
 			{
-				var level = data[i].level;
-				if(angular.isDefined($scope.stat_lvls[level]))
-					$scope.stat_lvls[level]++;
-				else
-					$scope.stat_lvls[level] = 1;
-			}
-			$scope.logs = data;
-			angular.element(serch_text).removeClass('loading');
-		})
-		.error(function(data, status)
+				angular.element(serch_text).removeClass('loading');
+				if(status == 401 && angular.isDefined(data.auth_url))
+					window.location = data.auth_url;
+				$scope.error_msg = data = data || "Request failed";
+			});
+		}
+		catch(e)
 		{
 			angular.element(serch_text).removeClass('loading');
-			if(status == 401 && angular.isDefined(data.auth_url))
-				window.location = data.auth_url;
-			return data = data || "Request failed";
-		});
+			console.log(e);
+		}
 	}
 	
 	$scope.f_date = function(val)
 	{
-		var time_obj = new Date(val.dateinsert * 1000);
-		var date_to = angular.copy($scope.date_to);
-		date_to.setDate(date_to.getDate() + 1);
-		return (time_obj >= $scope.date_fr && time_obj <= date_to);
+		var date_fr = $scope.date_fr.getTime()/1000; // Convert to seconds
+		var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
+		return (val.dateinsert >= date_fr && val.dateinsert <= date_to);
 	}
 	
 	$scope.f_levels = function(val)
