@@ -7,6 +7,7 @@ angular.module('Index', ['ngCookies'])
 	$scope.date_fr.setMinutes(0);
 	$scope.date_fr.setSeconds(0);
 	$scope.date_to = $scope.date_fr;
+	var el = document.getElementById.bind(document);
 	
 	$scope.$cookies = $cookies;
 	$scope.levels = getLevels;
@@ -33,10 +34,10 @@ angular.module('Index', ['ngCookies'])
 	{
 		try
 		{
-			var limit_fetch = $cookies.limit_fetch = angular.element(limit).val();
+			var limit_fetch = $cookies.limit_fetch = angular.element(el('limit')).val();
 			var search_text = $scope.search_text;
 			search_text = angular.isDefined(search_text) ? search_text : '';
-			angular.element(serch_text).addClass('loading');
+			angular.element(el('serch_text')).addClass('loading');
 
 			var date_fr = $scope.date_fr.getTime()/1000; // Convert to seconds
 			var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
@@ -71,11 +72,11 @@ angular.module('Index', ['ngCookies'])
 						$scope.stat_lvls[level] = 1;
 				}
 				$scope.logs = data;
-				angular.element(serch_text).removeClass('loading');
+				angular.element(el('serch_text')).removeClass('loading');
 			})
 			.error(function(data, status)
 			{
-				angular.element(serch_text).removeClass('loading');
+				angular.element(el('serch_text')).removeClass('loading');
 				if(status == 401 && angular.isDefined(data.auth_url))
 					window.location = data.auth_url;
 				$scope.error_msg = data = data || "Request failed";
@@ -83,7 +84,7 @@ angular.module('Index', ['ngCookies'])
 		}
 		catch(e)
 		{
-			angular.element(serch_text).removeClass('loading');
+			angular.element(el('serch_text')).removeClass('loading');
 			console.log(e);
 		}
 	}

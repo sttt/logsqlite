@@ -56,15 +56,15 @@
 								<div class="form-group col-lg-12">
 									<div class="col-lg-3 {{search.date_fr.$error.date && 'has-error' || ''}}">
 										<label class="control-label">Date from</label>
-										<input style="max-width: 200px;" type="date" name="date_fr" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control" required />
+										<input style="max-width: 160px;" type="date" name="date_fr" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control" required />
 									</div>
 									<div class="col-lg-3 {{search.date_to.$error.date && 'has-error' || ''}}">
 										<label class="control-label">Date to</label>
-										<input style="max-width: 200px;" type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
+										<input style="max-width: 160px;" type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
 									</div>
 									<div class="col-lg-3">
 										<label class="control-label">Limit message pulling</label>
-										<input style="max-width: 200px;" type="number" id="limit" value="{{$cookies.limit_fetch}}" min="1" class="form-control"/>
+										<input style="max-width: 120px;" type="number" id="limit" value="{{$cookies.limit_fetch}}" min="1" class="form-control"/>
 									</div>
 								</div>
 							</div>
