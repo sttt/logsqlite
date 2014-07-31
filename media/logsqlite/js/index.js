@@ -9,7 +9,7 @@ angular.module('Index', ['ngCookies'])
 	$scope.date_to = $scope.date_fr;
 	var el = document.getElementById.bind(document);
 	
-	$scope.$cookies = $cookies;
+	$scope.limit_fetch = $cookies.limit_fetch;
 	$scope.levels = getLevels;
 	
     $scope.conv_lvls_to_arr = function()
@@ -32,7 +32,7 @@ angular.module('Index', ['ngCookies'])
 	{
 		try
 		{
-			var limit_fetch = $cookies.limit_fetch = angular.element(el('limit')).val();
+			var limit_fetch = $cookies.limit_fetch = angular.element(el('limit_fetch')).val();
 			var search_text = $scope.search_text;
 			search_text = angular.isDefined(search_text) ? search_text : '';
 			angular.element(el('serch_text')).addClass('loading');
@@ -43,7 +43,7 @@ angular.module('Index', ['ngCookies'])
 			$scope.conv_lvls_to_arr();
 			var url = '?date_fr=' + date_fr
 						+ '&date_to=' + date_to
-						+ '&limit=' + limit_fetch
+						+ '&limit_fetch=' + limit_fetch
 						+ '&levels=' + angular.toJson($scope.arr_levels)
 						+ '&search_text=' + encodeURIComponent(search_text)
 			$http
@@ -115,19 +115,19 @@ angular.module('Index', ['ngCookies'])
 .directive('resizable', function($window) {
 	return function($scope)
 	{
-	  $scope.initializeWindowSize = function()
-	  {
-		$scope.windowWidth  = $window.innerWidth;
-		$scope.limit_to = $scope.windowWidth * .12;
-	  };
+		$scope.initializeWindowSize = function()
+		{
+			$scope.windowWidth  = $window.innerWidth;
+			$scope.limit_to = $scope.windowWidth * .12;
+		};
 	  
-	  angular.element($window).bind("resize", function()
-	  {
+		angular.element($window).bind("resize", function()
+		{
+			$scope.initializeWindowSize();
+			$scope.$apply();
+		});
+	  
 		$scope.initializeWindowSize();
-		$scope.$apply();
-	  });
-	  
-	  $scope.initializeWindowSize();
 	}
 })
 

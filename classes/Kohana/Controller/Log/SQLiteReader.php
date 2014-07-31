@@ -53,8 +53,6 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 				,`level`
 				,`body`
 				,`trace`
-				,`file`
-				,`line`
 				,`class`
 				,`function`
 				,`ip`
@@ -71,7 +69,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		if ($stmt === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 
-		$limit = ( ! empty($get['limit']) and (int) $get['limit']) ? $get['limit'] : $this->config['default_limit'];
+		$limit = ( ! empty($get['limit_fetch']) and (int) $get['limit_fetch']) ? $get['limit_fetch'] : $this->config['default_limit_fetch'];
 
 		$stmt->bindValue(':date_fr', $get['date_fr'], SQLITE3_INTEGER);
 		$stmt->bindValue(':date_to', $get['date_to'], SQLITE3_INTEGER);

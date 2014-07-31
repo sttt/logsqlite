@@ -84,8 +84,6 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					,`level` text
 					,`body` text
 					,`trace` text
-					,`file` text
-					,`line` integer
 					,`class` text
 					,`function` text
 					,`ip` text
@@ -106,8 +104,6 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					,`level`
 					,`body`
 					,`trace`
-					,`file`
-					,`line`
 					,`class`
 					,`function`
 					,`ip`
@@ -119,8 +115,6 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					,:level
 					,:body
 					,:trace
-					,:file
-					,:line
 					,:class
 					,:function
 					,:ip
@@ -138,8 +132,6 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					$stmt->bindValue(':level', @$row['level'], SQLITE3_TEXT);
 					$stmt->bindValue(':body', @$row['body'], SQLITE3_TEXT);
 					$stmt->bindValue(':trace', @$row['trace'], SQLITE3_TEXT);
-					$stmt->bindValue(':file', @$row['file'], SQLITE3_TEXT);
-					$stmt->bindValue(':line', @$row['line'], SQLITE3_INTEGER);
 					$stmt->bindValue(':class', @$row['class'], SQLITE3_TEXT);
 					$stmt->bindValue(':function', @$row['function'], SQLITE3_TEXT);
 					$stmt->bindValue(':ip', @Request::$client_ip, SQLITE3_TEXT);
@@ -184,9 +176,11 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 	 * @param   string  $format
 	 * @return  array
 	 */
-	public function format_message(array $message, $format = "")
+	public function format_message(array $message, $format = "body \n in file:line")
 	{
 		$message['level'] = $this->_log_levels[$message['level']];
+		
+		$message['body'] = strtr($format, array_filter($message, 'is_scalar'));
 		
 		if (isset($message['additional']['exception']))
 		{

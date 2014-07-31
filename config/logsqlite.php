@@ -4,7 +4,7 @@ return [
 	'directory' => APPPATH . 'logs', // Directory with SQLite Database
 	'filename' => 'db.sqlite', // SQLite Database file name
 	'tablename' => 'logs', // table name in the SQLite Database
-	'default_limit' => 50, // default_limit_fetch_rows
+	'default_limit_fetch' => 100, // default_limit_fetch_rows
 	'authentication' => false,
 	'users' => [
 		'admin' => '123', // pair:  username => password
