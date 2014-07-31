@@ -21,8 +21,6 @@ angular.module('Index', ['ngCookies'])
 		});
 	}
 	
-	$scope.error_msg_close = function(){ $scope.error_msg = false; }
-	
 	$scope.cols = [];
 	var i,j,chunk = 3;
 	for (i=0,j = $scope.levels.length; i<j; i+=chunk)
@@ -43,14 +41,15 @@ angular.module('Index', ['ngCookies'])
 			var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
 
 			$scope.conv_lvls_to_arr();
-			$http
-			({
-				method: 'GET'
-				,url: '?date_fr=' + date_fr
+			var url = '?date_fr=' + date_fr
 						+ '&date_to=' + date_to
 						+ '&limit=' + limit_fetch
 						+ '&levels=' + angular.toJson($scope.arr_levels)
 						+ '&search_text=' + encodeURIComponent(search_text)
+			$http
+			({
+				method: 'GET'
+				,url: url
 				,cache: false
 				,headers: {"X-Requested-With": "XMLHttpRequest",}
 			})
@@ -79,7 +78,7 @@ angular.module('Index', ['ngCookies'])
 				angular.element(el('serch_text')).removeClass('loading');
 				if(status == 401 && angular.isDefined(data.auth_url))
 					window.location = data.auth_url;
-				$scope.error_msg = data = data || "Request failed";
+				$scope.error_msg = url;
 			});
 		}
 		catch(e)
@@ -93,7 +92,7 @@ angular.module('Index', ['ngCookies'])
 	{
 		var date_fr = $scope.date_fr.getTime()/1000; // Convert to seconds
 		var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
-		return (val.dateinsert >= date_fr && val.dateinsert <= date_to);
+		return (val.time >= date_fr && val.time <= date_to);
 	}
 	
 	$scope.f_levels = function(val)
@@ -109,6 +108,8 @@ angular.module('Index', ['ngCookies'])
 		}
 		return res;
 	}
+	
+	$scope.error_msg_close = function(){ $scope.error_msg = false; }
 })
 
 .directive('resizable', function($window) {
@@ -139,7 +140,6 @@ angular.module('Index', ['ngCookies'])
 		{level: 'WARNING', label: 'warning', selected: true},
 		{level: 'NOTICE', label: 'default', selected: true},
 		{level: 'INFO', label: 'info', selected: true},
-		{level: 'DEBUG', label: 'info', selected: true},
 	];
 })
 

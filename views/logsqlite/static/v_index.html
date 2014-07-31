@@ -56,15 +56,15 @@
 								<div class="form-group col-lg-12">
 									<div class="col-lg-3 {{search.date_fr.$error.date && 'has-error' || ''}}">
 										<label class="control-label">Date from</label>
-										<input style="max-width: 160px;" type="date" name="date_fr" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control" required />
+										<input style="max-width: 150px;" type="date" name="date_fr" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control" required />
 									</div>
 									<div class="col-lg-3 {{search.date_to.$error.date && 'has-error' || ''}}">
 										<label class="control-label">Date to</label>
-										<input style="max-width: 160px;" type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
+										<input style="max-width: 150px;" type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
 									</div>
 									<div class="col-lg-3">
 										<label class="control-label">Limit message pulling</label>
-										<input style="max-width: 120px;" type="number" id="limit" value="{{$cookies.limit_fetch}}" min="1" class="form-control"/>
+										<input style="max-width: 90px;" type="number" id="limit" value="{{$cookies.limit_fetch}}" min="1" class="form-control"/>
 									</div>
 								</div>
 							</div>
@@ -86,7 +86,7 @@
 							<div class="row" ng-if="error_msg">
 								<div class="col-lg-12 alert alert-warning alert-dismissable">
 									<button ng-click="error_msg_close()" type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-									<strong>JavaScript message:</strong> Краще перевірте себе, щось є не дуже вдалим.
+									<strong>JavaScript message:</strong> Request failed. <a class="alert-link" target="_blank" href="{{error_msg}}">View error page</a> .
 								</div>
 							</div>
 							<div class="row" ng-if="logs.length">
@@ -113,10 +113,13 @@
 							<td colspan="3">Messages not found.</td>
 						</tr>
 						<tr ng-repeat="tr in logs | filter:search_text | filter:f_levels | filter:f_date" ng-click="tr.showDetails = ! tr.showDetails">
-							<td style="font-size: 12px;">{{tr.time}}</td>
+							<td style="font-size: 12px;">{{(tr.time * 1000) | date:'dd.MM.yyyy, HH:mm:ss'}}</td>
 							<td style="font-size: 11px;"><span class="label label-{{tr.level | badge_level}}">{{tr.level}}</span></td>
 							<td ng-show="!tr.showDetails">{{tr.body | limitTo:limit_to}}</td>
-							<td ng-show="tr.showDetails" style="white-space: pre-line;">{{tr.body}}</td>
+							<td ng-show="tr.showDetails" style="white-space: pre-line;"
+								>{{tr.body}}
+								{{tr.trace}}
+							</td>
 						</tr>
 					</table>
 				</div>

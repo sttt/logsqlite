@@ -49,16 +49,21 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		$stmt = $db->prepare
 		(
 			"select
-				time
-				,url
-				,ip
-				,level
-				,body
-				,dateinsert
+				`time`
+				,`level`
+				,`body`
+				,`trace`
+				,`file`
+				,`line`
+				,`class`
+				,`function`
+				,`ip`
+				,`url`
 			from $tablename
-			where dateinsert between :date_fr and :date_to
+			where time between :date_fr and :date_to
 				and level in($levels)
 				and body like :search_text
+			order by id desc
 			limit :limit
 			"
 		);

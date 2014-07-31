@@ -11,21 +11,6 @@
 class Kohana_Log_SQLiteWriter extends Log_Writer {
 	
 	/**
-	 * @var  string  timestamp format for log entries.
-	 *
-	 * Defaults to Date::$timestamp_format
-	 */
-	public static $timestamp;
-	
-
-	/**
-	 * @var  string  timezone for log entries
-	 *
-	 * Defaults to Date::$timezone, which defaults to date_default_timezone_get()
-	 */
-	public static $timezone;
-	
-	/**
 	 * Numeric log level to string lookup table.
 	 * @var array
 	 */
@@ -95,16 +80,16 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 				create table if not exists $tablename
 				(
 					id integer not null primary key autoincrement
-					,dateinsert integer
-					,url test
-					,ip text
-					,time text
+					,`time` integer
 					,`level` text
 					,`body` text
+					,`trace` text
 					,`file` text
 					,`line` integer
 					,`class` text
 					,`function` text
+					,`ip` text
+					,`url` test
 				)
 
 			");
@@ -117,29 +102,29 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			$stmt = $db->prepare('
 				insert into logs
 				(
-					url
-					,ip
-					,dateinsert
-					,time
+					`time`
 					,`level`
 					,`body`
+					,`trace`
 					,`file`
 					,`line`
 					,`class`
 					,`function`
+					,`ip`
+					,`url`
 				)
 				values
 				(
-					:url
-					,:ip
-					,:dateinsert
-					,:time
+					'.time().'
 					,:level
 					,:body
+					,:trace
 					,:file
 					,:line
 					,:class
 					,:function
+					,:ip
+					,:url
 				)
 			');
 
@@ -150,16 +135,15 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			foreach ($messages as $message)
 				foreach($this->format_message($message) as $row)
 				{
-					$stmt->bindValue(':url', $_SERVER['REQUEST_URI'], SQLITE3_TEXT);
-					$stmt->bindValue(':ip', @Request::$client_ip, SQLITE3_TEXT);
-					$stmt->bindValue(':dateinsert', time(), SQLITE3_INTEGER);
-					$stmt->bindValue(':time', @$row['time'], SQLITE3_TEXT);
 					$stmt->bindValue(':level', @$row['level'], SQLITE3_TEXT);
 					$stmt->bindValue(':body', @$row['body'], SQLITE3_TEXT);
+					$stmt->bindValue(':trace', @$row['trace'], SQLITE3_TEXT);
 					$stmt->bindValue(':file', @$row['file'], SQLITE3_TEXT);
 					$stmt->bindValue(':line', @$row['line'], SQLITE3_INTEGER);
 					$stmt->bindValue(':class', @$row['class'], SQLITE3_TEXT);
 					$stmt->bindValue(':function', @$row['function'], SQLITE3_TEXT);
+					$stmt->bindValue(':ip', @Request::$client_ip, SQLITE3_TEXT);
+					$stmt->bindValue(':url', $_SERVER['REQUEST_URI'], SQLITE3_TEXT);
 					$stmt->execute();
 					if ($stmt === false)
 						throw new Exception('Failed when inserting a new message in the logs table');
@@ -182,6 +166,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 				'line'       => isset($trace[0]['line']) ? $trace[0]['line'] : NULL,
 				'class'      => isset($trace[0]['class']) ? $trace[0]['class'] : NULL,
 				'function'   => isset($trace[0]['function']) ? $trace[0]['function'] : NULL,
+				'additional' => NULL,
 			];
 			
 			$file_log_writer->write($message);
@@ -201,20 +186,15 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 	 */
 	public function format_message(array $message, $format = "")
 	{
-		$message['time'] = Date::formatted_time('@'.$message['time'], Log_SQLiteWriter::$timestamp, Log_SQLiteWriter::$timezone, TRUE);
 		$message['level'] = $this->_log_levels[$message['level']];
 		
-		$rows[] = array_filter($message, 'is_scalar');
-
 		if (isset($message['additional']['exception']))
 		{
-			// Re-use as much as possible, just resetting the body to the trace
-			$message['body'] = $message['additional']['exception']->getTraceAsString();
-			$message['level'] = $this->_log_levels[Log_SQLiteWriter::$strace_level];
-
-			$rows[] = array_filter($message, 'is_scalar');
+			$message['trace'] = $message['additional']['exception']->getTraceAsString();
 		}
-
+		
+		$rows[] = array_filter($message, 'is_scalar');
+		
 		return $rows;
 	}
 }
