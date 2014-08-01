@@ -74,7 +74,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			
 			$db = new SQLite3($file_path);
 			
-			$tablename = $this->config['tablename'];
+			$tablename = $db->escapeString($this->config['tablename']);
 			
 			$result = $db->exec("
 				create table if not exists $tablename
@@ -134,10 +134,9 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					$stmt->bindValue(':trace', @$row['trace'], SQLITE3_TEXT);
 					$stmt->bindValue(':class', @$row['class'], SQLITE3_TEXT);
 					$stmt->bindValue(':function', @$row['function'], SQLITE3_TEXT);
-					$stmt->bindValue(':ip', @Request::$client_ip, SQLITE3_TEXT);
+					$stmt->bindValue(':ip', Request::$client_ip, SQLITE3_TEXT);
 					$stmt->bindValue(':url', $_SERVER['REQUEST_URI'], SQLITE3_TEXT);
-					$stmt->execute();
-					if ($stmt === false)
+					if ($stmt->execute() === false)
 						throw new Exception('Failed when inserting a new message in the logs table');
 				}
 		}

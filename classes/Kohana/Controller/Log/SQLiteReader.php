@@ -34,18 +34,15 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			return $this->action_media('views/logsqlite/static', 'v_index.html');
 		
 		$json = json_decode($post['json']);
-
+		
 		$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
-
 		$db = new SQLite3($file_path, SQLITE3_OPEN_READONLY);
-
+		
 		$db->busyTimeout(3000);
-
-		$tablename = $this->config['tablename'];
-		$tablename = $db->escapeString($tablename);
+		$tablename = $db->escapeString($this->config['tablename']);
 		
 		$levels = array_map([$db,'escapeString'], $json->levels);
-		$levels = "'".implode("', '", $levels)."'";
+		$levels = "'".implode("','", $levels)."'";
 
 		$stmt = $db->prepare
 		(
@@ -61,7 +58,11 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			from $tablename
 			where time between :date_fr and :date_to
 				and level in($levels)
-				and body like :search_text
+				and
+				(
+					body like :search_text
+					or trace like :search_text
+				)
 			order by id desc
 			limit :limit
 			"
@@ -76,7 +77,6 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		$stmt->bindValue(':date_to', $json->date_to, SQLITE3_INTEGER);
 		$stmt->bindValue(':search_text', "%{$json->search_text}%", SQLITE3_TEXT);
 		$stmt->bindValue(':limit', $limit, SQLITE3_TEXT);
-		
 		if (($results = $stmt->execute()) === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 
@@ -86,7 +86,9 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			$logs[] = $row;
 		}
 
-		$this->response->body(json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_HEX_AMP ));
+		$this->response
+			->headers('Content-Type', 'application/json; charset=utf-8')
+			->body(json_encode($logs, JSON_UNESCAPED_UNICODE | JSON_HEX_AMP ));
     }
 
 	public function action_media($dir = 'media/logsqlite', $file = '')
