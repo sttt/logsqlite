@@ -76,10 +76,11 @@ angular.module('Index', ['ngCookies'])
 						$scope.stat_lvls[level] = 1;
 				}
 				
-				$scope.logs = data;
+				$scope.logs = angular.fromJson(data);
 				
 				var symbol_percent = search_text.indexOf('%');
-				if(symbol_percent !== false)
+				console.log(symbol_percent);
+				if(symbol_percent != -1)
 					$scope.search_text = search_text.substr(0, symbol_percent);
 				
 				angular.element(el('serch_text')).removeClass('loading');
