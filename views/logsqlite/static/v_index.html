@@ -86,7 +86,7 @@
 							<div class="row" ng-if="error_msg">
 								<div class="col-lg-12 alert alert-warning alert-dismissable">
 									<button ng-click="error_msg_close()" type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-									<strong>JavaScript message:</strong> Request failed. <a class="alert-link" target="_blank" href="{{error_msg}}">View error page</a> .
+									<strong>JavaScript message:</strong> Request failed. <a ng-click="post()" class="alert-link" ng-href="#">View error page</a> .
 								</div>
 							</div>
 							<div class="row" ng-if="logs.length">
@@ -127,8 +127,7 @@
 								URL: {{tr.url}}
 								
 								{{tr.body}}
-								{{tr.trace}}
-							</td>
+								{{tr.trace}}</td>
 						</tr>
 					</table>
 				</div>

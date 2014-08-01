@@ -8,6 +8,9 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 	{
 		parent::before();
 		
+		if( ! class_exists('SQLite3'))
+			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
+		
 		$this->config = Kohana::$config->load('logsqlite');
 		
 		if ($this->config['authentication'] and empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
@@ -26,12 +29,11 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 	
 	protected function action_index()
     {
-		if( ! $get = $this->request->query())
+		if( ! $post = $this->request->post())
 			// Returns only static template
 			return $this->action_media('views/logsqlite/static', 'v_index.html');
 		
-		if( ! class_exists('SQLite3'))
-			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
+		$json = json_decode($post['json']);
 
 		$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
 
@@ -42,8 +44,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		$tablename = $this->config['tablename'];
 		$tablename = $db->escapeString($tablename);
 		
-		$levels = json_decode($get['levels'], true); // Associative array
-		$levels = array_map([$db,'escapeString'], $levels);
+		$levels = array_map([$db,'escapeString'], $json->levels);
 		$levels = "'".implode("', '", $levels)."'";
 
 		$stmt = $db->prepare
@@ -69,11 +70,11 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		if ($stmt === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 
-		$limit = ( ! empty($get['limit_fetch']) and (int) $get['limit_fetch']) ? $get['limit_fetch'] : $this->config['default_limit_fetch'];
+		$limit = $json->limit_fetch ?: $this->config['default_limit_fetch'];
 
-		$stmt->bindValue(':date_fr', $get['date_fr'], SQLITE3_INTEGER);
-		$stmt->bindValue(':date_to', $get['date_to'], SQLITE3_INTEGER);
-		$stmt->bindValue(':search_text', "%$get[search_text]%", SQLITE3_TEXT);
+		$stmt->bindValue(':date_fr', $json->date_fr, SQLITE3_INTEGER);
+		$stmt->bindValue(':date_to', $json->date_to, SQLITE3_INTEGER);
+		$stmt->bindValue(':search_text', "%{$json->search_text}%", SQLITE3_TEXT);
 		$stmt->bindValue(':limit', $limit, SQLITE3_TEXT);
 		
 		if (($results = $stmt->execute()) === false)

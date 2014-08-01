@@ -28,8 +28,11 @@ angular.module('Index', ['ngCookies'])
 		$scope.cols.push($scope.levels.slice(i,i+chunk));
 	}
 	
+	var data_post = {};
+	
 	$scope.fetch = function()
 	{
+		$scope.error_msg = 0;
 		try
 		{
 			var limit_fetch = $cookies.limit_fetch = angular.element(el('limit_fetch')).val();
@@ -37,21 +40,23 @@ angular.module('Index', ['ngCookies'])
 			search_text = angular.isDefined(search_text) ? search_text : '';
 			angular.element(el('serch_text')).addClass('loading');
 
-			var date_fr = $scope.date_fr.getTime()/1000; // Convert to seconds
-			var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
-
 			$scope.conv_lvls_to_arr();
-			var url = '?date_fr=' + date_fr
-						+ '&date_to=' + date_to
-						+ '&limit_fetch=' + limit_fetch
-						+ '&levels=' + angular.toJson($scope.arr_levels)
-						+ '&search_text=' + encodeURIComponent(search_text)
+			data_post = angular.toJson(
+			{
+				"date_fr": ($scope.date_fr.getTime()/1000),
+				"date_to": ($scope.date_to.getTime()/1000 + (24*3600)),
+				"limit_fetch": limit_fetch,
+				"levels": $scope.arr_levels,
+				"search_text": encodeURIComponent(search_text)
+			});
+				
 			$http
 			({
-				method: 'GET'
-				,url: url
+				method: 'POST'
+				,url: ''
+				,data: 'json=' + data_post
 				,cache: false
-				,headers: {"X-Requested-With": "XMLHttpRequest",}
+				,headers: {"X-Requested-With": "XMLHttpRequest", "Content-Type" : "application/x-www-form-urlencoded; charset=UTF-8"}
 			})
 			.success(function(data)
 			{
@@ -70,7 +75,13 @@ angular.module('Index', ['ngCookies'])
 					else
 						$scope.stat_lvls[level] = 1;
 				}
+				
 				$scope.logs = data;
+				
+				var symbol_percent = search_text.indexOf('%');
+				if(symbol_percent !== false)
+					$scope.search_text = search_text.substr(0, symbol_percent);
+				
 				angular.element(el('serch_text')).removeClass('loading');
 			})
 			.error(function(data, status)
@@ -78,7 +89,8 @@ angular.module('Index', ['ngCookies'])
 				angular.element(el('serch_text')).removeClass('loading');
 				if(status == 401 && angular.isDefined(data.auth_url))
 					window.location = data.auth_url;
-				$scope.error_msg = url;
+				
+				if(status === 500) $scope.error_msg = 1;
 			});
 		}
 		catch(e)
@@ -86,6 +98,30 @@ angular.module('Index', ['ngCookies'])
 			angular.element(el('serch_text')).removeClass('loading');
 			console.log(e);
 		}
+	}
+	
+	// Function that dynamically creates a form to send POST request
+	// with current params (used to display the error if it happens)
+	$scope.post = function() {
+		var path = '', params = {json: data_post}, method = 'POST';
+		var form = document.createElement("form");
+		form.setAttribute("method", method);
+		form.setAttribute("action", path);
+		form.setAttribute("target", "_blank");
+
+		for(var key in params) {
+			if(params.hasOwnProperty(key)) {
+				var hiddenField = document.createElement("input");
+				hiddenField.setAttribute("type", "hidden");
+				hiddenField.setAttribute("name", key);
+				hiddenField.setAttribute("value", params[key]);
+
+				form.appendChild(hiddenField);
+			 }
+		}
+
+		document.body.appendChild(form);
+		form.submit();
 	}
 	
 	$scope.f_date = function(val)
