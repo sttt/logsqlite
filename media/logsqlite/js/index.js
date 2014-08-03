@@ -1,6 +1,6 @@
 angular.module('Index', ['ngCookies'])
 
-.controller('MainController', function($scope, $http, $cookies, getLevels){
+.controller('MainController', ['$scope', '$http', '$cookies', 'getLevels', function($scope, $http, $cookies, getLevels){
 	
 	$scope.date_fr = new Date();
 	$scope.date_fr.setHours(0);
@@ -9,44 +9,58 @@ angular.module('Index', ['ngCookies'])
 	$scope.date_to = $scope.date_fr;
 	var el = document.getElementById.bind(document);
 	
-	$scope.limit_fetch = $cookies.limit_fetch;
-	$scope.levels = getLevels;
+	$scope.cols = [];
+	var i,j,chunk = 3;
+	for (i=0,j = getLevels.length; i<j; i+=chunk)
+	{
+		$scope.cols.push(getLevels.slice(i,i+chunk));
+	}
 	
+	var arr_levels;
     $scope.conv_lvls_to_arr = function()
 	{
-		$scope.arr_levels = [];
-		angular.forEach($scope.levels, function(obj)
+		arr_levels = [];
+		angular.forEach(getLevels, function(obj)
 		{
-		  if(obj.selected)$scope.arr_levels.push(obj.level);
+		  if(obj.selected)arr_levels.push(obj.level);
 		});
 	}
 	
-	$scope.cols = [];
-	var i,j,chunk = 3;
-	for (i=0,j = $scope.levels.length; i<j; i+=chunk)
-	{
-		$scope.cols.push($scope.levels.slice(i,i+chunk));
-	}
+	var limit_fetch = $cookies.limit_fetch;
+	$scope.limit_fetch = angular.isDefined(limit_fetch) ? limit_fetch : 100;
 	
 	var data_post = {};
 	
 	$scope.fetch = function()
 	{
+		angular.element(el('serch_text')).addClass('loading');
 		$scope.msg = false;
-		var limit_fetch = $cookies.limit_fetch = angular.element(el('limit_fetch')).val();
+		
 		var search_text = $scope.search_text;
 		search_text = angular.isDefined(search_text) ? search_text : '';
 
-		angular.element(el('serch_text')).addClass('loading');
 		$scope.conv_lvls_to_arr();
-		data_post = angular.toJson(
+		
+		try
 		{
-			"date_fr": ($scope.date_fr.getTime()/1000),
-			"date_to": ($scope.date_to.getTime()/1000 + (24*3600)),
-			"limit_fetch": limit_fetch,
-			"levels": $scope.arr_levels,
-			"search_text": encodeURIComponent(search_text)
-		});
+			data_post = angular.toJson(
+			{
+				"date_fr": ($scope.date_fr.getTime()/1000),
+				"date_to": ($scope.date_to.getTime()/1000 + (24*3600)),
+				"limit_fetch": angular.element(el('limit_fetch')).val(),
+				"levels": arr_levels,
+				"search_text": encodeURIComponent(search_text)
+			});
+		}
+		catch(err)
+		{
+			$scope.msg =
+			{
+				'class': 'warning',
+				html: '<strong>Warning:</strong> ' + err.message
+			};
+			return;
+		}
 
 		$http
 		({
@@ -67,8 +81,8 @@ angular.module('Index', ['ngCookies'])
 			{
 				$scope.msg =
 				{
-					class: 'warning',
-					html: '<strong>Warning:</strong> Server response is not JSON.',
+					'class': 'warning',
+					html: '<strong>Warning:</strong> Server response is not JSON.'
 				};
 				return;
 			}
@@ -76,8 +90,8 @@ angular.module('Index', ['ngCookies'])
 			if(data.msg)
 				$scope.msg =
 				{
-					class: data.msg.class,
-					html: data.msg.html,
+					'class': data.msg.class,
+					html: data.msg.html
 				};
 				
 			if( ! data.logs)
@@ -112,11 +126,10 @@ angular.module('Index', ['ngCookies'])
 			angular.element(el('serch_text')).removeClass('loading');
 			if(status == 401 && angular.isDefined(data.auth_url))
 				window.location = data.auth_url;
-
-			if(status === 500)
+			else if(status === 500)
 				$scope.msg =
 				{
-					class: 'warning',
+					'class': 'warning',
 					html: '<strong>Warning:</strong> Request failed.'
 				};
 		});
@@ -132,9 +145,9 @@ angular.module('Index', ['ngCookies'])
 	$scope.f_levels = function(val)
 	{
 		var res = false;
-		for(var i = 0; i < $scope.arr_levels.length; i++)
+		for(var i = 0; i < arr_levels.length; i++)
 		{
-			if(val.level == $scope.arr_levels[i])
+			if(val.level == arr_levels[i])
 			{
 				res = true;
 				break;
@@ -144,9 +157,9 @@ angular.module('Index', ['ngCookies'])
 	}
 	
 	$scope.msg_close = function(){ $scope.msg = false; }
-})
+}])
 
-.directive('resizable', function($window) {
+.directive('resizable', ['$window', function($window) {
 	return function($scope)
 	{
 		$scope.initializeWindowSize = function()
@@ -163,7 +176,7 @@ angular.module('Index', ['ngCookies'])
 	  
 		$scope.initializeWindowSize();
 	}
-})
+}])
 
 .factory('getLevels', function(){
 	return 	[
@@ -173,11 +186,11 @@ angular.module('Index', ['ngCookies'])
 		{level: 'ERROR', label: 'danger', selected: true},
 		{level: 'WARNING', label: 'warning', selected: true},
 		{level: 'NOTICE', label: 'default', selected: true},
-		{level: 'INFO', label: 'info', selected: true},
+		{level: 'INFO', label: 'info', selected: true}
 	];
 })
 
-.filter('badge_level', function(getLevels) {
+.filter('badge_level', ['getLevels', function(getLevels) {
     return function(val) {
 		var res = '';
         for(var i=0; i < getLevels.length; i++)
@@ -190,12 +203,12 @@ angular.module('Index', ['ngCookies'])
 		}
 		return res;
     };
-})
+}])
 
-.filter('unsafe', function($sce) {
+.filter('unsafe', ['$sce', function($sce) {
     return function(val) {
         return $sce.trustAsHtml(val);
     };
-})
+}])
 
 ;

@@ -43,7 +43,7 @@
 										<label class="control-label">Search text</label>
 										<input id="serch_text" autofocus type="text" class="form-control" ng-model="search_text"
 											   placeholder="{{logs.length && 'Now available Local Search by all fields'
-														   || 'Enter plain text for search in the field \'body\' (you can use the % wildcard for SQL query)'}}">
+														   || 'Enter plain text for search in the field \'body\' or \'trace\' (you can use the % wildcard for SQL query)'}}">
 									</div>
 									<div class="col-lg-1">
 										<div class="submit" style="margin-top: 1.8em">
@@ -64,7 +64,7 @@
 									</div>
 									<div class="col-lg-3">
 										<label class="control-label">Limit message pulling</label>
-										<input style="max-width: 90px;" type="number" id="limit_fetch" value="{{limit_fetch && limit_fetch || 100}}" min="1" class="form-control"/>
+										<input style="max-width: 90px;" type="number" id="limit_fetch" value="{{limit_fetch}}" min="1" class="form-control"/>
 									</div>
 								</div>
 							</div>

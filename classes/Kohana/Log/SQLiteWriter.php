@@ -87,13 +87,16 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 					,`class` text
 					,`function` text
 					,`ip` text
-					,`url` test
+					,`url` text
 				)
 
 			");
 			
 			if( ! $result)
 				throw new Exception('For some reason can not be created for the log table in the database SQLite');
+			
+			$db->exec("create index if not exists logs_time on logs(`time`)");
+			$db->exec("create index if not exists logs_level on logs(`level`)");
 			
 			$db->busyTimeout(3000);
 
@@ -157,7 +160,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 				'line'       => isset($trace[0]['line']) ? $trace[0]['line'] : NULL,
 				'class'      => isset($trace[0]['class']) ? $trace[0]['class'] : NULL,
 				'function'   => isset($trace[0]['function']) ? $trace[0]['function'] : NULL,
-				'additional' => NULL,
+				'additional' => ['exception' => $e],
 			];
 			
 			$file_log_writer->write($message);

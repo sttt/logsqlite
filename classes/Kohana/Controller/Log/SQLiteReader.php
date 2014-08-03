@@ -35,6 +35,9 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		}
 		catch(Exception $e)
 		{
+			if( ! $this->request->post())
+				throw $e;
+			
 			return $this->response
 			->headers('Content-Type', 'application/json; charset=utf-8')
 			->body(json_encode([
@@ -111,7 +114,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 					body like :search_text
 					or trace like :search_text
 				)
-			order by id desc
+			order by `time` desc
 			limit :limit
 			"
 		);
@@ -119,7 +122,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		if ($stmt === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 
-		$limit = $json->limit_fetch ?: $this->config['default_limit_fetch'];
+		$limit = @$json->limit_fetch ?: $this->config['default_limit_fetch'];
 
 		$stmt->bindValue(':date_fr', $json->date_fr, SQLITE3_INTEGER);
 		$stmt->bindValue(':date_to', $json->date_to, SQLITE3_INTEGER);
