@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-Kohana::$log->attach(new Log_SQLiteWriter());
+Kohana::$log->attach(new Log_SQLiteWriter);
 
 Route::set('logsqlite/index', 'logsqlite')
 	->defaults([

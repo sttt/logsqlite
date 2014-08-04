@@ -13,7 +13,13 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		
 		$this->config = Kohana::$config->load('logsqlite');
 		
-		if ($this->config['authentication'] and empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
+		if($this->config['authentication'])
+			$this->check_auth();
+	}
+	
+	protected function check_auth()
+    {
+		if (empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
 		{
 			// Web server may never pass these variables (depending on configuration);
 			// in this case, authentication will not work correctly
@@ -45,8 +51,8 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 					[
 						'class' => 'danger',
 						'html' => "<strong>PHP Exception:</strong> {$e->getMessage()}<br>in {$e->getFile()}:{$e->getLine()}<br><br>"
-						. "<strong>Debug:</strong><br>"
-						. "<span style=\"white-space: pre-line;\">{$e->getTraceAsString()}</span>"
+								. "<strong>Debug:</strong><br>"
+								. "<span style=\"white-space: pre-line;\">{$e->getTraceAsString()}</span>"
 					]
 			]));
 		}
@@ -69,7 +75,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 				'msg' =>
 					[
 						'class' => 'success',
-						'html' => "<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>"
+						'html' => "<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>.<br><br>(It is created automatically if required)"
 					]
 			]));
 		
@@ -88,7 +94,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 				'msg' =>
 					[
 						'class' => 'success',
-						'html' => "<strong>SQLite3:</strong> Table <i>$tablename</i> not exists in database <i>$file_path</i>",
+						'html' => "<strong>SQLite3:</strong> Table <i>$tablename</i> not exists in database <i>$file_path</i><br><br>(It is created automatically if required)",
 					]
 			]));
 		
@@ -122,7 +128,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		if ($stmt === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 
-		$limit = @$json->limit_fetch ?: $this->config['default_limit_fetch'];
+		$limit = $json->limit_fetch ?: $this->config['default_limit_fetch'];
 
 		$stmt->bindValue(':date_fr', $json->date_fr, SQLITE3_INTEGER);
 		$stmt->bindValue(':date_to', $json->date_to, SQLITE3_INTEGER);
