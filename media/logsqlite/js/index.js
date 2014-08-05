@@ -94,9 +94,18 @@ angular.module('Index', ['ngCookies'])
 					html: data.msg.html
 				};
 				
-			if( ! data.logs)
+			if(angular.isUndefined(data.logs))
 			{
 				$scope.logs = [];
+				$scope.stat_lvls = [];
+				if(angular.isUndefined(data.msg))
+				{
+					$scope.msg =
+					{
+						'class': 'info',
+						html: '<strong>Info:</strong> not found logs with the specified parameters'
+					};
+				}
 				return;
 			}
 			else
@@ -123,9 +132,19 @@ angular.module('Index', ['ngCookies'])
 		})
 		.error(function(data, status)
 		{
+			$scope.logs = [];
 			angular.element(el('serch_text')).removeClass('loading');
-			if(status == 401 && angular.isDefined(data.auth_url))
-				window.location = data.auth_url;
+			if(status == 401)
+			{
+				if(angular.isDefined(data.auth_url))
+					window.location = data.auth_url;
+				else
+					$scope.msg =
+					{
+						'class': 'warning',
+						html: '<strong>Warning:</strong> Authentication required.'
+					};
+			}
 			else if(status === 500)
 				$scope.msg =
 				{

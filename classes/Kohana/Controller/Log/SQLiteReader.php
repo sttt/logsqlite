@@ -44,17 +44,12 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			if( ! $this->request->post())
 				throw $e;
 			
-			return $this->response
-			->headers('Content-Type', 'application/json; charset=utf-8')
-			->body(json_encode([
-				'msg' =>
-					[
-						'class' => 'danger',
-						'html' => "<strong>PHP Exception:</strong> {$e->getMessage()}<br>in {$e->getFile()}:{$e->getLine()}<br><br>"
-								. "<strong>Debug:</strong><br>"
-								. "<span style=\"white-space: pre-line;\">{$e->getTraceAsString()}</span>"
-					]
-			]));
+			$this->send_json_msg(
+				'danger',
+				"<strong>PHP Exception:</strong> {$e->getMessage()}<br>in {$e->getFile()}:{$e->getLine()}<br><br>"
+				. "<strong>Debug:</strong><br>"
+				. "<span style=\"white-space: pre-line;\">{$e->getTraceAsString()}</span>"
+			);
 		}
 	}
 	
@@ -69,15 +64,11 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
 		
 		if( !file_exists($file_path))
-			return $this->response
-			->headers('Content-Type', 'application/json; charset=utf-8')
-			->body(json_encode([
-				'msg' =>
-					[
-						'class' => 'success',
-						'html' => "<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>.<br><br>(It is created automatically if required)"
-					]
-			]));
+			return $this->send_json_msg(
+				'success',
+				"<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>.<br><br>"
+				. "(It is created automatically if required)"
+			);
 		
 		$db = new SQLite3($file_path, SQLITE3_OPEN_READONLY);
 		$db->busyTimeout(3000);
@@ -88,15 +79,11 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 				->fetchArray(SQLITE3_NUM);
 		
 		if( ! $res[0])
-			return $this->response
-			->headers('Content-Type', 'application/json; charset=utf-8')
-			->body(json_encode([
-				'msg' =>
-					[
-						'class' => 'success',
-						'html' => "<strong>SQLite3:</strong> Table <i>$tablename</i> not exists in database <i>$file_path</i><br><br>(It is created automatically if required)",
-					]
-			]));
+			return $this->send_json_msg(
+				'success',
+				"<strong>SQLite3:</strong> Table <i>$tablename</i> not exists in database <i>$file_path</i><br><br>"
+				. "(It is created automatically if required)"
+			);
 		
 		$levels = array_map([$db,'escapeString'], $json->levels);
 		$levels = "'".implode("','", $levels)."'";
@@ -137,7 +124,6 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		if (($results = $stmt->execute()) === false)
 			throw new Exception('For some reason, the logs can not be loaded');
 		
-//		$prepare_json['msg'] = ['class'=>'info', 'html'=>'some msg'];
 		$prepare_json['logs'] = [];
 		while ($row = $results->fetchArray(SQLITE3_ASSOC))
 		{
@@ -146,7 +132,20 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 
 		$this->response
 			->headers('Content-Type', 'application/json; charset=utf-8')
-			->body(json_encode($prepare_json, JSON_UNESCAPED_UNICODE | JSON_HEX_AMP ));
+			->body(json_encode($prepare_json, JSON_HEX_AMP));
+    }
+
+	protected function send_json_msg($class = 'warning', $hrml = 'Something wrong')
+	{
+		$this->response
+		->headers('Content-Type', 'application/json; charset=utf-8')
+		->body(json_encode([
+			'msg' =>
+				[
+					'class' => $class,
+					'html' => $hrml
+				]
+		]));
     }
 
 	public function action_media($dir = 'media/logsqlite', $file = '')

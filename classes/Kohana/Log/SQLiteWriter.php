@@ -79,7 +79,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			$result = $db->exec("
 				create table if not exists $tablename
 				(
-					id integer not null primary key autoincrement
+					`id` integer not null primary key autoincrement
 					,`time` integer
 					,`level` text
 					,`body` text
@@ -95,10 +95,10 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			if( ! $result)
 				throw new Exception('For some reason can not be created for the log table in the database SQLite');
 			
+			$db->busyTimeout(3000);
+			
 			$db->exec("create index if not exists logs_time on logs(`time`)");
 			$db->exec("create index if not exists logs_level on logs(`level`)");
-			
-			$db->busyTimeout(3000);
 
 			$stmt = $db->prepare('
 				insert into logs
@@ -126,7 +126,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			');
 
 			if ($stmt === false)
-				throw new Exception('There was a glitch in the preparation of the request for a table logs');
+				throw new Exception('Failed when preparation of the request for a table logs');
 			
 			$message_str = '';
 			foreach ($messages as $message)
