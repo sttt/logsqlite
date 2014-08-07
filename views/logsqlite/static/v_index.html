@@ -54,24 +54,24 @@
 									</div>
 									<div class="col-lg-1">
 										<div class="submit" style="margin-top: 1.8em">
-											<button id="btn-search" type="submit" class="btn btn-default">Pull messages</button>
+											<button ng-disabled="search.$invalid" type="submit" class="btn btn-default">Pull messages</button>
 										</div>
 									</div>
 								</div>
 							</div>
 							<div class="row">
 								<div class="form-group col-lg-12">
-									<div class="col-lg-3 {{search.date_fr.$error.date && 'has-error' || ''}}">
+									<div class="col-lg-3">
 										<label class="control-label">Date from</label>
-										<input style="max-width: 150px;" type="date" name="date_fr" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control" required />
+										<input style="max-width: 150px;" type="date" ng-model="date_fr" placeholder="yyyy-MM-dd" class="form-control ng_input" required />
 									</div>
-									<div class="col-lg-3 {{search.date_to.$error.date && 'has-error' || ''}}">
+									<div class="col-lg-3">
 										<label class="control-label">Date to</label>
-										<input style="max-width: 150px;" type="date" name="date_to" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control" required />
+										<input style="max-width: 150px;" type="date" ng-model="date_to" placeholder="yyyy-MM-dd" class="form-control ng_input" required />
 									</div>
 									<div class="col-lg-3">
 										<label class="control-label">Limit message pulling</label>
-										<input style="max-width: 90px;" type="number" id="limit_fetch" value="{{limit_fetch}}" min="1" class="form-control"/>
+										<input ng-model="limit_fetch" style="max-width: 90px;" type="number" value="{{limit_fetch}}" min="1" class="form-control ng_input"/>
 									</div>
 								</div>
 							</div>

@@ -3,8 +3,7 @@ body {
 }
 
 input[type=date] {
-line-height: 28px;
-max-width: 200px;
+max-width: 220px;
 }
 
 td{
@@ -18,4 +17,13 @@ background-color: #E7E7E7;
 
 .loading {
 	background: white url('/media/logsqlite/img/load.gif') 99% center no-repeat;
+}
+
+.ng_input {
+  -webkit-transition:all linear 0.2s;
+  transition:all linear 0.2s;
+  background: transparent;
+}
+.ng_input.ng-invalid {
+  background: #FFE9F2;
 }

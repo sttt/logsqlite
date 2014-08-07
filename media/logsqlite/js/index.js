@@ -47,13 +47,14 @@ angular.module('Index', ['ngCookies'])
 			{
 				"date_fr": ($scope.date_fr.getTime()/1000),
 				"date_to": ($scope.date_to.getTime()/1000 + (24*3600)),
-				"limit_fetch": angular.element(el('limit_fetch')).val(),
+				"limit_fetch": $scope.limit_fetch,
 				"levels": arr_levels,
 				"search_text": encodeURIComponent(search_text)
 			});
 		}
 		catch(err)
 		{
+			angular.element(el('serch_text')).removeClass('loading');
 			$scope.msg =
 			{
 				'class': 'warning',
@@ -156,6 +157,9 @@ angular.module('Index', ['ngCookies'])
 	
 	$scope.f_date = function(val)
 	{
+		if($scope.search.$invalid)
+			return;
+		
 		var date_fr = $scope.date_fr.getTime()/1000; // Convert to seconds
 		var date_to = $scope.date_to.getTime()/1000 + (24*3600); // Convert to seconds and plus one day
 		return (val.time >= date_fr && val.time <= date_to);
