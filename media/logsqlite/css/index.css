@@ -3,7 +3,7 @@ body {
 }
 
 input[type=date] {
-max-width: 220px;
+max-width: 160px;
 }
 
 td{

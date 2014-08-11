@@ -26,8 +26,7 @@ angular.module('Index', ['ngCookies'])
 		});
 	}
 	
-	var limit_fetch = $cookies.limit_fetch;
-	$scope.limit_fetch = angular.isDefined(limit_fetch) ? limit_fetch : 100;
+	$scope.limit_fetch = angular.isDefined($cookies.limit_fetch) ? Number($cookies.limit_fetch) : 300;
 	
 	var data_post = {};
 	
@@ -35,6 +34,7 @@ angular.module('Index', ['ngCookies'])
 	{
 		angular.element(el('serch_text')).addClass('loading');
 		$scope.msg = false;
+		$cookies.limit_fetch = $scope.limit_fetch;
 		
 		var search_text = $scope.search_text;
 		search_text = angular.isDefined(search_text) ? search_text : '';
