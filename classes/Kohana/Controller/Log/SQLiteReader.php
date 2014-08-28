@@ -18,7 +18,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 	}
 	
 	protected function check_auth()
-    {
+  {
 		if (empty($_SERVER['REMOTE_USER'])) // HTTP Basic Authentication
 		{
 			// Web server may never pass these variables (depending on configuration);
@@ -34,7 +34,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 	}
 	
 	protected function action_index()
-    {
+  {
 		try
 		{
 			$this->_index();
@@ -54,7 +54,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 	}
 	
 	protected function _index()
-    {
+  {
 		if( ! $post = $this->request->post())
 			// Returns only static template
 			return $this->action_media('views/logsqlite/static', 'v_index.html');
@@ -146,7 +146,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 					'html' => $hrml
 				]
 		]));
-    }
+  }
 
 	public function action_media($dir = 'media/logsqlite', $file = '')
 	{
