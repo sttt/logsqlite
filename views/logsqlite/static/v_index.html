@@ -124,7 +124,7 @@
 							<td>
 								<img
 									ng-click="tr.showDetails = ! tr.showDetails"
-									title="{{ tr.showDetails && 'Expanding' || 'Grow' }}"
+									title="{{ tr.showDetails && 'Collapse' || 'Expand' }}"
 									src="../../../media/logsqlite/img/collapse{{ tr.showDetails && '_rlb' || '' }}.gif">
 							</td>
 							<td style="font-size: 12px;">{{(tr.time * 1000) | date:'dd.MM.yyyy, HH:mm:ss'}}</td>
