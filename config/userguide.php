@@ -1,11 +1,12 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-return array(
+return
+[
 	// Leave this alone
-	'modules' => array(
-
+	'modules' =>
+	[
 		// This should be the path to this modules userguide pages, without the 'guide/'. Ex: '/guide/modulename/' would be 'modulename'
-		'logsqlite' => array(
-
+		'logsqlite' =>
+		[
 			// Whether this modules userguide pages should be shown
 			'enabled' => TRUE,
 			
@@ -17,6 +18,6 @@ return array(
 			
 			// Copyright message, shown in the footer for this module
 			'copyright' => '&copy; 2014 Костя Третяк',
-		)	
-	)
-);
+		]
+	]
+];

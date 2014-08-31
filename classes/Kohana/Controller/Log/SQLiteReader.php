@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct script access.');
+<?php defined('SYSPATH') or exit('No direct script access.');
 
 class Kohana_Controller_Log_SQLiteReader extends Controller {
 	
@@ -8,13 +8,13 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 	{
 		parent::before();
 		
-		if( ! class_exists('SQLite3'))
-			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
-		
 		$this->config = Kohana::$config->load('logsqlite');
 		
 		if($this->config['authentication'])
 			$this->check_auth();
+		
+		if( ! class_exists('SQLite3'))
+			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
 	}
 	
 	protected function check_auth()
@@ -37,7 +37,33 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
   {
 		try
 		{
-			$this->_index();
+			if( ! $post = $this->request->post())
+				// Returns only static template
+				return $this->action_media('views/logsqlite/static', 'v_index.html');
+
+			$json = json_decode($post['json']);
+
+			$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
+
+			if( !file_exists($file_path))
+				return $this->send_json_msg(
+					'success',
+					"<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>.<br><br>"
+					. "(It is created automatically if required)"
+				);
+
+			$model = new Model_Log_SQLite($this->config, SQLITE3_OPEN_READONLY);
+
+			if( ! $model->check_if_exitsts_table())
+				return $this->send_json_msg(
+					'success',
+					"<strong>SQLite3:</strong> Table <i>".$this->config['tablename']."</i> not exists in database <i>$file_path</i><br><br>"
+					. "(It is created automatically if required)"
+				);
+			
+			$this->response
+				->headers('Content-Type', 'application/json; charset=utf-8')
+				->body( json_encode($model->select($json), JSON_HEX_AMP) );
 		}
 		catch(Exception $e)
 		{
@@ -51,89 +77,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 				. "<span style=\"white-space: pre-line;\">{$e->getTraceAsString()}</span>"
 			);
 		}
-	}
-	
-	protected function _index()
-  {
-		if( ! $post = $this->request->post())
-			// Returns only static template
-			return $this->action_media('views/logsqlite/static', 'v_index.html');
-		
-		$json = json_decode($post['json']);
-		
-		$file_path = realpath($this->config['directory']).DIRECTORY_SEPARATOR.$this->config['filename'];
-		
-		if( !file_exists($file_path))
-			return $this->send_json_msg(
-				'success',
-				"<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>.<br><br>"
-				. "(It is created automatically if required)"
-			);
-		
-		$db = new SQLite3($file_path, SQLITE3_OPEN_READONLY);
-		$db->busyTimeout(3000);
-		
-		$tablename = $db->escapeString($this->config['tablename']);
-		
-		$res = $db->query("select count(*) from sqlite_master where type='table' and name='$tablename'")
-				->fetchArray(SQLITE3_NUM);
-		
-		if( ! $res[0])
-			return $this->send_json_msg(
-				'success',
-				"<strong>SQLite3:</strong> Table <i>$tablename</i> not exists in database <i>$file_path</i><br><br>"
-				. "(It is created automatically if required)"
-			);
-		
-		$levels = array_map([$db,'escapeString'], $json->levels);
-		$levels = "'".implode("','", $levels)."'";
-
-		$stmt = $db->prepare
-		(
-			"select
-				`time`
-				,`level`
-				,`body`
-				,`trace`
-				,`class`
-				,`function`
-				,`ip`
-				,`url`
-			from $tablename
-			where time between :date_fr and :date_to
-				and level in($levels)
-				and
-				(
-					body like :search_text
-					or trace like :search_text
-				)
-			order by `time` desc
-			limit :limit
-			"
-		);
-
-		if ($stmt === false)
-			throw new Exception('For some reason, the logs can not be loaded');
-
-		$limit = $json->limit_fetch ?: $this->config['default_limit_fetch'];
-
-		$stmt->bindValue(':date_fr', $json->date_fr, SQLITE3_INTEGER);
-		$stmt->bindValue(':date_to', $json->date_to, SQLITE3_INTEGER);
-		$stmt->bindValue(':search_text', "%{$json->search_text}%", SQLITE3_TEXT);
-		$stmt->bindValue(':limit', $limit, SQLITE3_TEXT);
-		if (($results = $stmt->execute()) === false)
-			throw new Exception('For some reason, the logs can not be loaded');
-		
-		$prepare_json['logs'] = [];
-		while ($row = $results->fetchArray(SQLITE3_ASSOC))
-		{
-			$prepare_json['logs'][] = $row;
-		}
-
-		$this->response
-			->headers('Content-Type', 'application/json; charset=utf-8')
-			->body(json_encode($prepare_json, JSON_HEX_AMP));
-    }
+  }
 
 	protected function send_json_msg($class = 'warning', $hrml = 'Something wrong')
 	{

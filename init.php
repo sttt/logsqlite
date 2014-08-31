@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') or die('No direct script access.');
+<?php defined('SYSPATH') or exit('No direct script access.');
 
 Kohana::$log->attach(new Log_SQLiteWriter);
 
@@ -9,7 +9,7 @@ Route::set('logsqlite/index', 'logsqlite')
 		'action' => 'index',
 	]);
 
-Route::set('logsqlite/media', 'media/logsqlite(/<file>)', array('file' => '.+'))
+Route::set('logsqlite/media', 'media/logsqlite(/<file>)', ['file' => '.+'])
 	->defaults([
 		'directory' => 'Log',
 		'controller' => 'SQLiteReader',

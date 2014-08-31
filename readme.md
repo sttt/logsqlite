@@ -8,14 +8,14 @@
 Kohana::$log->attach($file_log_writer =  new Log_File(APPPATH.'logs'));
 
 // Потім переходимо до частини підключення модулів і додаємо змінну $modules
-$modules = Kohana::modules(array(
+$modules = Kohana::modules([
 
    // Тут перелік потрібних вам модулів
 
    // Далі підключаємо модуль logsqlite
 	 'logsqlite'  => MODPATH.'logsqlite',
 
-	));
+	]);
 
 // Оскільки підключається модуль Logsqlite, то зразу після підключення модулів
 // можна від'єднати записувач логів у файли.

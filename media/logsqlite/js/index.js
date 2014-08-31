@@ -17,7 +17,7 @@ angular.module('Index', ['ngCookies'])
 	}
 	
 	var arr_levels;
-    $scope.conv_lvls_to_arr = function()
+  $scope.conv_lvls_to_arr = function()
 	{
 		arr_levels = [];
 		angular.forEach(getLevels, function(obj)
@@ -94,8 +94,8 @@ angular.module('Index', ['ngCookies'])
 					'class': data.msg.class,
 					html: data.msg.html
 				};
-				
-			if(angular.isUndefined(data.logs))
+			
+			if(angular.isUndefined(data.logs) || data.logs == '')
 			{
 				$scope.logs = [];
 				$scope.stat_lvls = [];

@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-return [
-	
+return
+[
 	'directory' => APPPATH . 'logs', // Directory with SQLite Database
 	'filename' => 'db.sqlite', // SQLite Database file name
 	'tablename' => 'logs', // table name in the SQLite Database
