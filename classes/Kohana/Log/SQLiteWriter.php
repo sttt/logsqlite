@@ -45,7 +45,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 		if( ! $model->create_table_if_not_exists() )
 			throw new Exception('For some reason the table in SQLite database can not be created');
 		
-		$model->create_indexes();
+		$model->create_indexes_if_not_exists();
 		return $model;
 	}
 
@@ -75,7 +75,7 @@ class Kohana_Log_SQLiteWriter extends Log_Writer {
 			[
 				'time'       => time(),
 				'level'      => Log::ERROR,
-				'body'       => 'Log_SQLiteWriter failed: ',$e->getMessage(),
+				'body'       => 'Log_SQLiteWriter failed: '.$e->getMessage(),
 				'trace'      => $trace,
 				'file'       => isset($trace[0]['file']) ? $trace[0]['file'] : NULL,
 				'line'       => isset($trace[0]['line']) ? $trace[0]['line'] : NULL,

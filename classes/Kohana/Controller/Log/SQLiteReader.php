@@ -3,6 +3,8 @@
 class Kohana_Controller_Log_SQLiteReader extends Controller {
 	
 	protected $config;
+	protected $dir = 'views/logsqlite/static'; // Dir with views
+	protected $template = 'v_index.html'; // Template view
 
 	public function before()
 	{
@@ -12,9 +14,6 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		
 		if($this->config['authentication'])
 			$this->check_auth();
-		
-		if( ! class_exists('SQLite3'))
-			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
 	}
 	
 	protected function check_auth()
@@ -39,7 +38,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 		{
 			if( ! $post = $this->request->post())
 				// Returns only static template
-				return $this->action_media('views/logsqlite/static', 'v_index.html');
+				return $this->action_media($this->dir, $this->template);
 
 			$json = json_decode($post['json']);
 
@@ -48,7 +47,7 @@ class Kohana_Controller_Log_SQLiteReader extends Controller {
 			if( !file_exists($file_path))
 				return $this->send_json_msg(
 					'success',
-					"<strong>SQLite3:</strong> database is not exists in <i>$file_path</i>.<br><br>"
+					"<strong>SQLite3:</strong> database not exists in <i>$file_path</i>.<br><br>"
 					. "(It is created automatically if required)"
 				);
 

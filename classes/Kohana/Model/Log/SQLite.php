@@ -23,7 +23,7 @@ class Kohana_Model_Log_SQLite
 	public function __construct($config, $flag)
 	{
 		if( ! class_exists('SQLite3'))
-			throw new Exception('SQLite3 class does not exist (in php.ini must enable php_sqlite3)');
+			throw new Exception('SQLite3 class does not exist');
 
 		$file_path = realpath($config['directory']).DIRECTORY_SEPARATOR.$config['filename'];
 
@@ -50,7 +50,7 @@ class Kohana_Model_Log_SQLite
 		);
 	}
 	
-	public function create_indexes()
+	public function create_indexes_if_not_exists()
 	{
 		$this->db->exec("create index if not exists logs_time on logs(`time`)");
 		$this->db->exec("create index if not exists logs_level on logs(`level`)");
@@ -126,7 +126,7 @@ class Kohana_Model_Log_SQLite
 	
 	public function check_if_exitsts_table()
 	{
-		$res = $this->db->query("select count(*) from sqlite_master where type='table' and name='".$this->config['tablename']."'")
+		$res = $this->db->query("select count(*) from sqlite_master where type='table' and name = '".$this->config['tablename']."'")
 			->fetchArray(SQLITE3_NUM);
 		return $res[0];
 	}
