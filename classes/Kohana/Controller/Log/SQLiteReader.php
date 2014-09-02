@@ -1,5 +1,13 @@
 <?php defined('SYSPATH') or exit('No direct script access.');
-
+/**
+ * SQLite зчитувач логів. Зчитує повідомлення, що збережені в базі даних SQLite.
+ *
+ * @package    KtretyaK
+ * @category   Logging
+ * @author     Kohana Team, Kostya Tretyak
+ * @copyright  (c) 2008-2014 Kohana Team
+ * @license    http://kohanaframework.org/license
+ */
 class Kohana_Controller_Log_SQLiteReader extends Controller {
 	
 	protected $config;
