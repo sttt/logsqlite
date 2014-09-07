@@ -25,4 +25,4 @@ if(isset($modules['logsqlite']) and class_exists('SQLite3'))
 ## Читання логів
 Для того щоб прочитати логи перейдіть за адресою `http://localhost/logsqlite`
 
-![Kohana Log_SQLiteReader screen](https://828f85f1585854333a377c3188885bba545948b5.googledrive.com/host/0B0f9Yj4IgIm4SFh2ZUthM1F0R3M/LogSQLite.png "Kohana Log_SQLiteReader screen")
+![Kohana Log_SQLiteReader screen](https://828f85f1585854333a377c3188885bba545948b5.googledrive.com/host/0B0f9Yj4IgIm4SFh2ZUthM1F0R3M/img/github.com/LogSQLite.png "Kohana Log_SQLiteReader screen")
